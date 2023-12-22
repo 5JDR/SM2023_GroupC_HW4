@@ -96,7 +96,7 @@ for the selected prior. If your first choice was correct, you will be able to co
 # ISLR - Chapter 7 - Exercises 7.9
 ## Exercise 1
 It was mentioned in the chapter that a cubic regression spline with
-one knot at $\xi$ can be obtained using a basis of the form $x, x_2, x_3$,
+one knot at $\xi$ can be obtained using a basis of the form $x, x^2, x^3$,
 $(x − \xi)^3_+$, where $(x − \xi)^3_+ = (x − \xi)^3 \quad if \quad x > \xi$ and equals 0 otherwise.
 We will now show that a function of the form
 
@@ -123,6 +123,7 @@ $$f^{′′}_1 (x) = 2c_1 + 6d_1x.$$
 
 **Solution**
 
+
 ## Exercise 2
 Suppose that a curve $\hat{g}$ is computed to smoothly fit a set of n points
 using the following formula:
@@ -137,6 +138,12 @@ example sketches of $\hat{g}$ in each of the following scenarios.
 (e) $\lambda = 0, m = 3$.
 
 **Solution**
+
+(a) If $\lambda = \inf$ and $m = 0$, then we have that $\hat{g} = arg \min_g (\sum_{i=1}^n (y_i − g(x_i))^2)$, which reduce the value of the function $g$, then the result will be a constant function equal to zero.
+(b) If $\lambda = \inf$ and $m = 1$, then we have that $\hat{g} = arg \min_g (\sum_{i=1}^n (y_i − g(x_i))^2 + \lambda \int [g^{(1)}(x)]^2 dx)$, which is the least squares fit with a penalty on the first derivative. The penalty term is so high that the fit is a straight line.
+(c) If $\lambda = \inf$ and $m = 2$, then we have that $\hat{g} = arg \min_g (\sum_{i=1}^n (y_i − g(x_i))^2 + \lambda \int [g^{(2)}(x)]^2 dx)$, which is the least squares fit with a penalty on the second derivative. The penalty term is so high that the fit is a straight line.
+(d) If $\lambda = \inf$ and $m = 3$, then we have that $\hat{g} = arg \min_g (\sum_{i=1}^n (y_i − g(x_i))^2 + \lambda \int [g^{(3)}(x)]^2 dx)$, which is the least squares fit with a penalty on the third derivative. The penalty term is so high that the fit is a straight line.
+(e) If $\lambda = 0$ and $m = 3$, then we have that $\hat{g} = arg \min_g ( \sum_{i=1}^n (y_i − g(x_i))^2 + \lambda \int [g^{(3)}(x)]^2 dx)$, which is the least squares fit with no penalty because the factor $\lambda$ is zero.
 
 ## Exercise 3
 Suppose we fit a curve with basis functions $b_1(X) = X$, $b_2(X) = (X − 1)^2I(X \geq 1)$. (Note that $I(X \geq 1)$ equals 1 for $X \geq 1$ and 0
