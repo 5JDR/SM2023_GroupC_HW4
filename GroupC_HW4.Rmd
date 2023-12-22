@@ -173,6 +173,7 @@ y <- 1 + x - 2 * (x - 1)^2 * sapply(x, Identity)
 plot(x, y, type = "l")
 ```
 
+
 We can see that if $x \leq 1 $the intercept is $\beta_0$ and the slope is $\beta_1$. In this case the function is a line.
 If $x > 1$ the intercept is $\beta_0 + \beta_2$ and the slope is $\beta_1 - 4\beta_2$ and the coefficient of the quadratic term is equal to $\beta_2$. In this case the function is a parabola.
 
@@ -210,6 +211,7 @@ y <- 1 + x * sapply(x, b1) + 3 * sapply(x, b2)
 
 plot(x, y, type = "l")
 ```
+
 If $x < 0$ or $2 < x < 3$ or $x > 5$ the function is the constant value $\beta_0$.
 If $0 \leq x < 1$ the function is a line with intercept $\beta_0$ and slope $\beta_1$.
 If $1 \leq x \leq 2$ the function is a constant value equal to $\beta_0 + \beta_1$.
@@ -217,7 +219,7 @@ If $3 \leq x \leq 4$ the function is a line with intercept $\beta_0 + 3\beta_2$ 
 If $4 < x \leq 5$ the function is a constant value equal to $\beta_0 + \beta_2$.
 
 ## Exercise 5
-Consider two curves, $\hat{g}_1$ and \hat{g}_2, defined by
+Consider two curves, $\hat{g}_1$ and $\hat{g}_2$, defined by
 $$\hat{g}_1 = arg \min_g ( \sum_{i=1}^n (y_i − g(x_i))^2 + \lambda \int [g^{(3)}(x)]^2 dx),$$
 
 $$\hat{g}_2 = arg \min_g ( \sum_{i=1}^n (y_i − g(x_i))^2 + \lambda \int [g^{(4)}(x)]^2 dx),$$
