@@ -18,11 +18,52 @@ with $\alpha = \beta = 1$ to form the prior distribution to use with the new sur
 
 **Solution**
 
+```{r}
+n = 25
+vegetarian = rep(0, n)
+```
+
+```{r}
+alpha <- beta <- 0.5
+curve(dbeta(x, alpha, beta), ylab="Density", xlim=c(-0.01,0.5), ylim=c(0, 200))
+curve(dbeta(x, alpha + sum(vegetarian), beta + n - sum(vegetarian)), add=TRUE, col="red")
+legend("topright", legend=c("Prior", "Posterior"), col=c("black", "red"), lty=1)
+```
+
+```{r}
+alpha <- beta <- 1
+curve(dbeta(x, alpha, beta), ylab="Density", xlim=c(-0.01,0.5), ylim=c(0, 30))
+curve(dbeta(x, alpha + sum(vegetarian), beta + n - sum(vegetarian)), add=TRUE, col="red")
+legend("topright", legend=c("Prior", "Posterior"), col=c("black", "red"), lty=1)
+```
+
+```{r}
+alpha <- beta <- 10
+curve(dbeta(x, alpha, beta), ylab="Density", xlim=c(-0.01,1), ylim=c(0, 10))
+curve(dbeta(x, alpha + sum(vegetarian), beta + n - sum(vegetarian)), add=TRUE, col="red")
+legend("topright", legend=c("Prior", "Posterior"), col=c("black", "red"), lty=1)
+```
+The posterior mean will approach the prior mean, so using the value 0.5 and 1 the mean will be near to zero and, using the value 10, the posterior mean will be between zero and the prior mean. We can notice that the posterior mean is 0.2 so the data mean weights more than the prior mean.
+
+####################
+######TO CHECK######
+####################
+
+```{r}
+x <- seq(0, 1, 100)
+values <- dbeta(x, 1 + sum(vegetarian), 1 + n - sum(vegetarian))
+maximum <- max(values)
+p <- x[values == maximum] # Equal to zero
+
+# Always zero
+new <- rbinom(10, 1, p)
+new
+```
+
 ## Exercise 4.62
-Bias-variance tradeoff: For a binomial parameter π, consider the Bayesian estimator $(Y +1)~(n + 2)$ that occurs with a uniform prior distribution.
-(a) Derive its bias and its variance. Compare these with the bias and variance of the ML
-estimator $\hat{\pi} = Y~n$.
-(b) Show that its $MSE = [n\pi(1 − \pi) + (1 − 2\pi)2]~(n + 2)^2$. For $n = 10$ and for $n = 1000$, plot this and the MSE of the ML estimator as a function of $\pi$. Describe the $\pi$ values for which the MSE is smaller for the Bayes estimator. Explain how this reflects its shrinkage toward \frac{1}{2} and the bias/variance tradeoff.
+For the bootstrap method, explain the similarity and difference between the true sampling
+distribution of ˆθ and the empirically-generated bootstrap distribution in terms of its center
+and its spread.
 
 **Solution**
 
