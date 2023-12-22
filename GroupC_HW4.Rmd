@@ -81,14 +81,26 @@ statistics, and prediction.
 With the statistical models we can summarize the effects of a population, like means and variances, and make inference about the population parameters based on the sample, while the algorithms are more suited to make predictions based on the input data, but they usually can't make inference about the population parameters or the distribution that generated them.
 
 # LAB
-Suppose you receive $n = 15$ phone calls in a day, and you want to build a model to assess their average length. Your likelihood for each call length is $y_i∼Exponential(\lambda)$. Now, you have to choose the prior $\pi(\lambda)$. Please, tell which of these priors is adequate to describe the problem, and provide a short motivation for each of them:
+LAB: Suppose you receive $n=15$ phone calls in a day, and you want to build a model to assess their average length. Your likelihood for each call length is $y_i∼Exponential(\lambda)$. Now, you have to choose the prior $\pi(\lambda)$. Please, tell which of these priors is adequate to describe the problem, and provide a short motivation for each of them:
 
-1. $\pi(\lambda)=Beta(4,2)$
-2. $\pi(\lambda)=Normal(1,2)$
-3. $\pi(\lambda)=Gamma(4,2)$
+$\pi(\lambda)=Beta(4,2);$
 
-Now, compute your posterior as $\pi(\lambda|y) \propto L(\lambda;y)\pi(\lambda)$
-for the selected prior. If your first choice was correct, you will be able to compute it analytically.
+$\pi(\lambda)=Normal(1,2);$
+
+$\pi(\lambda)=Gamma(4,2);$
+
+Now, compute your posterior as $\pi(\lambda|y) \propto L(\lambda; y)\pi(\lambda)$ for the selected prior. If your first choice was correct, you will be able to compute it analytically. \newline
+
+The parameter of the exponential distribution is strictly positive and defined on the whole real line. This implies that a suitable prior distribution for $\lambda$ is given by the Gamma random variable.
+
+$f_{y;\lambda} = \lambda^n e^{-\lambda \sum y_i}$
+
+$f_{\lambda} = \frac{1}{\Gamma(\alpha)}\beta^{\alpha}\lambda^{\alpha-1}e^{-\beta \lambda}$
+
+$f_{\lambda|y} \propto \lambda^n e^{-\lambda \sum y_i} \lambda^{\alpha - 1} e^{-\beta \lambda} = \lambda^{n + \alpha+1}e^{-\lambda(\sum y_i + \beta)}$
+
+Which is the kernel of a Gamma distribution with parameters $\alpha + n$ and $\sum y_i + \beta$.
+
 
 **Solution**
 
