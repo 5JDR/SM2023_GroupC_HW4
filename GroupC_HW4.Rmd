@@ -65,9 +65,9 @@ For the bootstrap method, explain the similarity and difference between the true
 distribution of $\hat{\theta}$ and the empirically-generated bootstrap distribution in terms of its center
 and its spread.
 
-
-
 **Solution**
+
+The true sampling distribution is the distribution of the statistic obtained if we infinitely sample from the population. The bootstrap distribution is the distribution of the statistic obtained if we sample from the dataset. For the CLT the centers of both the distributions will be similar, but the spread of the bootstrap distribution will be smaller than the true sampling distribution because based on a limited amount of elements. Therefore, the bootstrap distribution will be affect from the original dataset bias.
 
 
 # FSDS - Chapter 8
