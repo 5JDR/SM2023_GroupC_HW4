@@ -154,6 +154,29 @@ estimated curve between $X = −2$ and $X = 2$. Note the intercepts, slopes, and
 
 **Solution**
 
+```{r}
+Identity <- function(x) {
+  if (x >= 1) {
+    return(x)
+  } else {
+    return(0)
+  }
+}
+```
+
+
+```{r}
+x <- seq(-2, 2, 0.1)
+
+y <- 1 + x - 2 * (x - 1)^2 * sapply(x, Identity)
+
+plot(x, y, type = "l")
+```
+
+We can see that if $x \leq 1 $the intercept is $\beta_0$ and the slope is $\beta_1$. In this case the function is a line.
+If $x > 1$ the intercept is $\beta_0 + \beta_2$ and the slope is $\beta_1 - 4\beta_2$ and the coefficient of the quadratic term is equal to $\beta_2$. In this case the function is a parabola.
+
+
 ## Exercise 4
 Suppose we fit a curve with basis functions $b_1(X) = I(0 \leq X \leq 2) − (X − 1)I(1 \leq X \leq 2)$, $b_2(X) = (X − 3)I(3 \leq X \leq 4) + I(4 < X \leq 5)$.
 We fit the linear regression model 
