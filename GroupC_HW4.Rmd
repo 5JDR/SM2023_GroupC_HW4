@@ -78,6 +78,8 @@ statistics, and prediction.
 
 **Solution**
 
+With the statistical models we can summarize the effects of a population, like means and variances, and make inference about the population parameters based on the sample, while the algorithms are more suited to make predictions based on the input data, but they usually can't make inference about the population parameters or the distribution that generated them.
+
 # LAB
 Suppose you receive $n = 15$ phone calls in a day, and you want to build a model to assess their average length. Your likelihood for each call length is $y_i∼Exponential(\lambda)$. Now, you have to choose the prior $\pi(\lambda)$. Please, tell which of these priors is adequate to describe the problem, and provide a short motivation for each of them:
 
