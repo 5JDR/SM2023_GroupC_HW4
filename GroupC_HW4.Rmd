@@ -157,7 +157,7 @@ estimated curve between $X = −2$ and $X = 2$. Note the intercepts, slopes, and
 ```{r}
 Identity <- function(x) {
   if (x >= 1) {
-    return(x)
+    return(1)
   } else {
     return(0)
   }
@@ -184,6 +184,37 @@ $$Y = \beta_0 + \beta_1b_1(X) + \beta_2b_2(X) + e,$$
 and obtain coefficient estimates $\hat{\beta}_0 = 1$, $\hat{\beta}_1 = 1$, $\hat{\beta}_2 = 3$. Sketch the estimated curve between $X = −2$ and $X = 2$. Note the intercepts, slopes, and other relevant information.
 
 **Solution**
+
+```{r}
+Identity_range <- function(x, l, u) {
+  if (x <= u && x >= l) {
+    return(1)
+  } else {
+    return(0)
+  }
+}
+
+b1 <- function(x) {
+  return(Identity_range(x, 0, 2) - (x - 1) * Identity_range(x, 1, 2))
+}
+
+b2 <- function(x) {
+  return((x - 3) * Identity_range(x, 3, 4) + Identity_range(x, 4, 5))
+}
+```
+
+```{r}
+x <- seq(-2, 2, 0.1)
+
+y <- 1 + x * sapply(x, b1) + 3 * sapply(x, b2)
+
+plot(x, y, type = "l")
+```
+If $x < 0$ or $2 < x < 3$ or $x > 5$ the function is the constant value $\beta_0$.
+If $0 \leq x < 1$ the function is a line with intercept $\beta_0$ and slope $\beta_1$.
+If $1 \leq x \leq 2$ the function is a constant value equal to $\beta_0 + \beta_1$.
+If $3 \leq x \leq 4$ the function is a line with intercept $\beta_0 + 3\beta_2$ and slope $\beta_2$.
+If $4 < x \leq 5$ the function is a constant value equal to $\beta_0 + \beta_2$.
 
 ## Exercise 5
 Consider two curves, $\hat{g}_1$ and \hat{g}_2, defined by
