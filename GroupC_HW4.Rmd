@@ -62,8 +62,10 @@ new
 
 ## Exercise 4.62
 For the bootstrap method, explain the similarity and difference between the true sampling
-distribution of ˆθ and the empirically-generated bootstrap distribution in terms of its center
+distribution of $\hat{\theta}$ and the empirically-generated bootstrap distribution in terms of its center
 and its spread.
+
+
 
 **Solution**
 
