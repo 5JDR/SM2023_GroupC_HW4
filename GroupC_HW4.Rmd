@@ -123,6 +123,79 @@ $$f^{′′}_1 (x) = 2c_1 + 6d_1x.$$
 
 **Solution**
 
+(a) Given that for $x \leq \xi$ we have that $(x − \xi)^3_+ = 0$, then we can write $f(x)$ as:
+
+$$
+f(x) = \beta_0 + \beta_1x + \beta_2x^2 + \beta_3x^3 + \beta_4 \cdot 0 = \beta_0 + \beta_1x + \beta_2x^2 + \beta_3x^3
+$$
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Then, the coefficients of $f_1(x)$ are:
+
+- $a_1 = \beta_0$
+- $b_1 = \beta_1$
+- $c_1 = \beta_2$
+- $d_1 = \beta_3$
+
+(b) Given that for $x > \xi$ we have that $(x − \xi)^3_+ = (x − \xi)^3$, then we can write $f(x)$ as:
+
+$$
+f(x) = \beta_0 + \beta_1x + \beta_2x^2 + \beta_3x^3 + \beta_4(x − \xi)^3
+$$
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; If we expand the last term we get:
+
+$$
+\beta_0 + \beta_1x + \beta_2x^2 + \beta_3x^3 + \beta_4(x^3 - 3 x^2 \xi + 3 \xi^2 x - \xi^3) = \\ = (\beta_0 - \beta_4\xi^3) + (\beta_1 + 3\beta_4\xi^2)x + (\beta_2 - 3\beta_4\xi)x^2 + (\beta_3 + \beta_4)x^3 
+$$
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Then, the coefficients of $f_2(x)$ are:
+
+- $a_2 = \beta_0 - \beta_4\xi^3$
+- $b_2 = \beta_1 + 3\beta_4\xi^2$
+- $c_2 = \beta_2 - 3\beta_4\xi$
+- $d_2 = \beta_3 + \beta_4$
+
+(c)
+
+$$
+f_1(\xi) = a_1 + b_1 \xi + c_1 \xi^2 + d_1 \xi^3 = \\ = \beta_0 + \beta_1\xi + \beta_2\xi^2 + \beta_3\xi^3
+$$
+
+$$
+f_2(\xi) = a_2 + b_2 \xi + c_2 \xi^2 + d_2 \xi^3 = \\ = (\beta_0 - \beta_4\xi^3) + (\beta_1 + 3\beta_4\xi^2)\xi + (\beta_2 - 3\beta_4\xi)\xi^2 + (\beta_3 + \beta_4)\xi^3 = \\ = \beta_0 + \beta_1 \xi + \beta_2 \xi^2 + \beta_3 \xi^3 - \beta_4\xi^3 + \beta_4\xi^3 + 3\beta_4\xi^3 - 3\beta_4\xi^3 = \\ = \beta_0 + \beta_1 \xi + \beta_2 \xi^2 + \beta_3 \xi^3
+$$
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$f_1(\xi) = f_2(\xi)$, $q. e. d.$
+
+(d)
+
+$$
+f^{'}_1(\xi) = b_1 + 2c_1\xi + 3d_1\xi^2 = \\ = \beta_1 + 2\beta_2\xi + 3\beta_3\xi^2
+$$
+
+$$
+f^{'}_2(\xi) = b_2 + 2c_2\xi + 3d_2\xi^2 = \\ = (\beta_1 + 3\beta_4\xi^2) + 2(\beta_2 - 3\beta_4\xi)\xi + 3(\beta_3 + \beta_4)\xi^2 = \\ = \beta_1 + 2\beta_2\xi + 3\beta_3\xi^2 + 3\beta_4\xi^2 - 6\beta_4\xi^2 + 3\beta_4\xi^2 = \\ = \beta_1 + 2\beta_2\xi + 3\beta_3\xi^2
+$$
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$f^{'}_1(\xi) = f^{'}_2(\xi)$, $q. e. d.$
+
+(e)
+
+$$
+f^{''}_1(\xi) = 2c_1 + 6d_1\xi = \\ = 2\beta_2 + 6\beta_3\xi
+$$
+$$
+f^{''}_2(\xi) = 2c_2 + 6d_2\xi = \\ = 2(\beta_2 - 3\beta_4\xi) + 6(\beta_3 + \beta_4)\xi = \\ = 2\beta_2 + 6\beta_3\xi - 6\beta_4\xi + 6\beta_4\xi = \\ = 2\beta_2 + 6\beta_3\xi
+$$
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$f^{''}_1(\xi) = f^{''}_2(\xi)$, $q. e. d.$
+
+Therefore:
+
+- Since $f(x)$ can be written as a linear combination of $f_1(x)$ and $f_2(x)$
+- which are two cubic polynomials, defined for $x \leq \xi$ and for $x > \xi$, 
+- $f_1(x)$ and $f_2(x)$ are continuous and have continuous first and second derivatives,
+
+then $f(x)$ is a cubic spline.
 
 ## Exercise 2
 Suppose that a curve $\hat{g}$ is computed to smoothly fit a set of n points
