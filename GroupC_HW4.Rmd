@@ -701,7 +701,45 @@ iterations are required in order to obtain a “good” approximation to
 the multiple regression coefficient estimates? Create a plot to justify
 your answer
 
-**Solution**
+```{r}
+
+p = 100
+n = 1000
+
+X = matrix(rnorm(n * p), ncol = p)
+beta = rnorm(p)
+Y = X %*% beta + rnorm(n)
+
+beta_hat = rep(0, p)
+num_iter = 5
+
+# Stores the coefficients at each iteration
+beta_hat_mat = matrix(0, nrow = num_iter, ncol = p)
+
+for (i in 1:num_iter) {
+  for (j in 1:p) {
+
+    residual = Y - X[, -j] %*% beta_hat[-j]
+    
+    beta_hat[j] = lm(residual ~ X[, j])$coef[2]
+  }
+  
+  beta_hat_mat[i, ] = beta_hat
+}
+
+# Sum of Squared Errors from the real vector of coefficients
+error = apply(beta_hat_mat, 1, function(b) sum((b - beta)^2))
+
+df = data.frame("SSE"=unlist(error),
+                "iter"=1:length(error))
+
+MLE_fit = lm(Y ~ X)
+MLE_error = sum((MLE_fit$coefficients[-1] - beta)^2)
+
+df %>% ggplot(aes(x=iter, y=SSE)) + geom_point() + geom_line() + 
+  geom_hline(yintercept=MLE_error, col="indianred") + ylim(c(0, NA))
+```
+The algorithm converges after just a few iteration to the same value for $\hat{\beta}$ obtained via ML estimation, whose error is represented in the plot by the red line.
 
 
 # GAM
