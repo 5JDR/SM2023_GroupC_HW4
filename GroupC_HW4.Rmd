@@ -317,19 +317,97 @@ where $g^{(m)}$ represents the mth derivative of $g$.
 
 **Solution**
 
+(a) In the limit of $\lambda \to \inf$ the penalty term will dominate the RSS. For this reason the resulting function will be the most smooth possible. This means that both the functions will have the same training RSS. But the function $\hat{g}_2$ will have the greater training RSS because uses a greater derivative order.
+(b) As before, in the limit of $\lambda \to \inf$ the penalty term will dominate the RSS. For this reason the resulting function will be the most smooth possible. This means that both the functions will have the same test RSS. But the function $\hat{g}_2$ will have the greater test RSS because uses a greater derivative order.
+(c) In the limit of $\lambda \to 0$ the penalty term will be negligible. For this reason the resulting function will be the most flexible possible. This means that both the functions will have the same training and test RSS.
+
 ## Exercise 6
 In this exercise, you will further analyze the Wage data set considered
 throughout this chapter.
+
 (a) Perform polynomial regression to predict wage using age. Use
-cross-validation to select the optimal degree d for the polyno-
-mial. What degree was chosen, and how does this compare to
+cross-validation to select the optimal degree d for the polynomial. What degree was chosen, and how does this compare to
 the results of hypothesis testing using ANOVA? Make a plot of
 the resulting polynomial fit to the data.
-(b) Fit a step function to predict wage using age, and perform cross-
-validation to choose the optimal number of cuts. Make a plot of
+(b) Fit a step function to predict wage using age, and perform cross-validation to choose the optimal number of cuts. Make a plot of
 the fit obtained.
 
 **Solution**
+
+```{r}
+library(ISLR)
+library(modelr)
+cv  <- crossv_kfold(Wage, k = 10)
+
+models <- vector("list", 10)
+RMSE <- rep(NA, 10)
+R2 <- rep(NA, 10)
+```
+
+
+```{r}
+results.df <- data.frame("degree"=rep(NA, 5), "RMSE"=rep(NA, 5), "R2"=rep(NA, 5))
+
+for (d in 1:5){
+  for (i in 1:10) {
+    model <- lm(wage ~ poly(age, d), data = cv$train[[i]])
+    
+    y_hat <- predict(model, cv$test[[i]])
+    RMSE[i] <- sqrt(mean((y_hat - data$wage[cv$test[[i]][2]$idx])^2))
+    
+    R2[i] <- summary(model)$adj.r.squared
+    
+  }
+  
+  models[[d]] <- model
+  results.df[d, ] <- list("degree"=d, "RMSE"=mean(RMSE), "R2"=mean(R2))
+}
+
+results.df
+```
+
+```{r}
+anova(models[[1]], models[[2]], models[[3]], models[[4]], models[[5]])
+```
+
+From the results we can see that the best degree is 4 if we are considering the RMSE and the R2 values. If we are considering the ANOVA test then the best degree is 2, which RMSE and R2 are really similar. The plot of the resulting polynomial fit to the data is the following:
+
+```{r}
+poly2 <- lm(wage ~ poly(age, 2), data = Wage)
+y_hat <- predict(poly2, data.frame(age = x))
+
+plot(data$age, data$wage, col = "blue", pch = 20, cex = 0.5)
+lines(x, y_hat, col = "red", lwd = 2)
+```
+```{r}
+results.df <- data.frame("degree"=rep(NA, 10), "RMSE"=rep(NA, 10), "R2"=rep(NA, 10))
+
+for (d in 3:10){
+  for (i in 1:10) {
+    model <- lm(wage ~ cut(age, seq(1, 80, length.out=d)), data = cv$train[[i]])
+    
+    y_hat <- predict(model, cv$test[[i]])
+    RMSE[i] <- sqrt(mean((y_hat - data$wage[cv$test[[i]][2]$idx])^2))
+    
+    R2[i] <- summary(model)$adj.r.squared
+    
+  }
+  
+  models[[d]] <- model
+  results.df[d, ] <- list("degree"=d, "RMSE"=mean(RMSE), "R2"=mean(R2))
+}
+
+results.df[c(-1, -2), ]
+```
+The best result is obtained with 8 cuts. This results are really similar to the previous polynomial models. The plot of the fit obtained is the following:
+```{r}
+cut8 <- lm(wage ~ cut(age, seq(1, 80, length.out=8)), data = Wage)
+y_hat <- predict(cut8, data.frame(age = x))
+
+plot(data$age, data$wage, col = "blue", pch = 20, cex = 0.5)
+lines(x, y_hat, col = "red", lwd = 2)
+```
+
 
 ## Exercise 7
 The Wage data set contains a number of other features not explored
