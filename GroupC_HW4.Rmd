@@ -339,6 +339,7 @@ library(ISLR)
 library(modelr)
 cv  <- crossv_kfold(Wage, k = 10)
 
+data <- Wage
 models <- vector("list", 10)
 RMSE <- rep(NA, 10)
 R2 <- rep(NA, 10)
@@ -373,6 +374,7 @@ anova(models[[1]], models[[2]], models[[3]], models[[4]], models[[5]])
 From the results we can see that the best degree is 4 if we are considering the RMSE and the R2 values. If we are considering the ANOVA test then the best degree is 2, which RMSE and R2 are really similar. The plot of the resulting polynomial fit to the data is the following:
 
 ```{r}
+x <- seq(18, 80, length.out=100)
 poly2 <- lm(wage ~ poly(age, 2), data = Wage)
 y_hat <- predict(poly2, data.frame(age = x))
 
@@ -401,6 +403,7 @@ results.df[c(-1, -2), ]
 ```
 The best result is obtained with 8 cuts. This results are really similar to the previous polynomial models. The plot of the fit obtained is the following:
 ```{r}
+x <- seq(18, 80, length.out=100)
 cut8 <- lm(wage ~ cut(age, seq(1, 80, length.out=8)), data = Wage)
 y_hat <- predict(cut8, data.frame(age = x))
 
@@ -418,6 +421,70 @@ fit flexible models to the data. Create plots of the results obtained,
 and write a summary of your findings.
 
 **Solution**
+
+```{r}
+library(ISLR)
+
+summary(Wage)
+```
+
+The dataset contains 12 variables, 7 of them are categorical. The variable region is not significant because all the rows have the same value. We can try to fit a linear model and then try to fit a non-linear models using all the variable beside region and logwage.
+```{r}
+data <- Wage[, -c(6, 10)]
+
+complete <- lm(wage ~ ., data = data)
+summary(complete)
+```
+
+```{r}
+poly <- lm(wage ~ poly(age, 2) + poly(year, 3) + maritl + race + education + jobclass + health_ins, data = data)
+
+summary(poly)
+```
+We can notice that the polynomial fit is statistically significant for the variable year, this probably because we have just 6 years. For this reason we can try to remove it.
+```{r}
+poly2 <- lm(wage ~ poly(age, 2) + year + maritl + race + education + jobclass + health_ins, data = data)
+
+summary(poly2)
+```
+```{r}
+anova(poly2)
+```
+We can notice that the remaining variables are statistically significant but the R-squared value is increased only by 0.01 (roughly). We can try to use the step function instead of the polynomial fit.
+```{r}
+cutted <- lm(wage ~ cut(age, seq(1, 80, length.out=8)) + year + maritl + race + education + jobclass + health_ins, data = data)
+
+summary(cutted)
+```
+
+In this case the results are slightly better than the previous ones. As last try we can use the splines on the variable age.
+```{r message=FALSE, warning=FALSE}
+library(mgcv)
+smoothed <- gam(wage ~ s(age) + year + maritl + race + education + jobclass + health_ins, data = data)
+
+summary(smoothed)
+```
+
+The results are similar to the previous ones. Then the best model is the one obtained with the step function even if the difference is really small. The plot of the fit obtained is the following:
+```{r}
+sorted <- data[order(data$age), ]
+y_hat_complete <- predict(complete, data.frame(sorted))
+y_hat_poly     <- predict(poly    , data.frame(sorted))
+y_hat_poly2    <- predict(poly2   , data.frame(sorted))
+y_hat_cutted   <- predict(cutted  , data.frame(sorted))
+y_hat_smoothed <- predict(smoothed, data.frame(sorted))
+
+plot (sorted$age, data$wage     , col = "blue"  , pch = 20, cex = 0.5)
+lines(sorted$age, y_hat_complete, col = "red"   , lwd = 2)
+lines(sorted$age, y_hat_poly    , col = "green" , lwd = 2)
+lines(sorted$age, y_hat_poly2   , col = "orange", lwd = 2)
+lines(sorted$age, y_hat_cutted  , col = "purple", lwd = 2)
+lines(sorted$age, y_hat_smoothed, col = "black" , lwd = 2)
+legend("topleft", legend = c("Complete", "Poly", "Poly2", "Cutted", "Smoothed"), col = c("red", "green", "orange", "purple", "black"), lty = 1, cex = 0.8)
+```
+
+From the plot we can notice that the models are really similar but all of them are not smoothed at all.
+
 
 ## Exercise 8
 Fit some of the non-linear models investigated in this chapter to the
