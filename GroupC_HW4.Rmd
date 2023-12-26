@@ -493,6 +493,162 @@ data set? Create some informative plots to justify your answer.
 
 **Solution**
 
+Let's first visualize the data to look for non-linear relationships.
+
+```{r}
+library(ISLR)
+library(tidyr)
+library(dplyr)
+
+plot(Auto)
+```
+
+It looks like many of the variables have non-linear relationships with mpg (the response). Let's try fitting some non-linear models to the data.
+
+### Polynomial Regression
+
+Using `horsepower` as the only predictor.
+
+By doing 8-fold cross-validation, we want to find out which degree of polynomial fits the data best without overfitting.
+
+```{r, warning=FALSE}
+# Selecting the best fit by K-fold cross validation
+library(ggplot2)
+
+folds <- sample(rep(1:8, nrow(Auto)/8))
+errors <- matrix(NA, 8, 8)
+models <- list()
+
+for (k in 1:8) {
+    for (i in 1:8) {
+        model <- lm(mpg ~ poly(horsepower,i), data = Auto[folds != i,])
+        pred <- predict(model, Auto[folds == i,])
+        resid <- (Auto$mpg[folds==i] - pred)^2
+        errors[k, i] <- sqrt(mean(resid))
+    }
+}
+errors <- apply(errors, 2, mean)
+
+data_frame(RMSE = errors) %>%
+    mutate(Polynomial = row_number()) %>%
+    ggplot(aes(Polynomial, RMSE, fill = Polynomial == which.min(errors))) + 
+    geom_col() +
+    scale_x_continuous(breaks = 1:8) +
+    guides(fill = FALSE) +
+    coord_cartesian(ylim = c(min(errors), max(errors)))
+
+optimal_degree <- which.min(errors)
+```
+
+The optimal polynomial degree is "r optimal_degree".
+
+Let's fit a polynomial regression model with degree "r optimal_degree".
+
+```{r}
+poly <- lm(mpg ~ poly(horsepower, optimal_degree), data = Auto)
+summary(poly)
+```
+```{r, warning=FALSE}
+Auto %>%
+    mutate(Predictions = predict(poly, Auto)) %>%
+    ggplot() + xlab('Horsepower') + ylab('MPG') + 
+    geom_point(aes(horsepower, mpg, col = 'blue')) +
+    geom_line(aes(horsepower, Predictions, col = 'red'), size = 1.5) +
+    scale_color_manual(name = 'Value Type',
+                       labels = c('Observed', 'Predicted'),
+                       values = c('#60B7F8', '#E89F15'))
+```
+
+It looks like a polynomial regression model with degree 7 fits the non-linear relationship between `horsepower` and `mpg` well.
+
+### Splines
+
+Using `weight` as the only predictor.
+
+Now mpg will be predicted with a spline function of weight. Also a linear model will be fitted. Then an anova test will be performed to see if the spline model fits the data significantly better than the linear model. If so, it may be that the relationship between weight and mpg is non-linear.
+
+```{r, warning=FALSE, message=FALSE}
+# Using Caret package to ease model selection
+library(caret)
+
+spline <- train(mpg ~ displacement, data = Auto,
+                method = 'gamSpline',
+                trControl = trainControl(method = 'cv', number = 8),
+                tuneGrid = expand.grid(df = seq(1, 12, 1)))
+linear <- train(mpg ~ displacement, data = Auto, method = 'lm',
+                trControl = trainControl(method = 'cv', number = 8))
+plot(spline)
+```
+The cross-validation leads us to choose a spline basis with 12 degrees of freedom.
+
+```{r}
+anova(linear$finalModel, spline$finalModel)
+```
+
+The Spline model fits better the data. It decreases the residual sum of squares by 20% and its p-value is close to zero. Therefore, we can say with good confidence that the relationship is non-linear.
+
+```{r}
+Auto %>%
+    mutate(pred = predict(spline, Auto)) %>%
+    ggplot() + 
+    geom_point(aes(displacement, mpg, col = 'blue')) +
+    geom_line(aes(displacement, pred, col = 'red'), size = 1.5) +
+    scale_color_manual(name = 'Value Type',
+                       labels = c('Observed', 'Predicted'),
+                       values = c('#60B7F8', '#E89F15')) +
+    labs(x = 'Acceleration', y = 'MPG')
+```
+
+### Generalized Adaptive Model
+
+Now we will fit a GAM to mpg as a function of horsepower, weight, displacement and acceleration. The same comparison as before with a linear model will be performed.
+
+```{r, warning=FALSE, message=FALSE}
+# Crossvalidating again via Caret
+
+gam <- train(mpg ~ horsepower  + 
+               weight + 
+               displacement +
+               acceleration +
+               year, data = Auto,
+               method = 'gam',
+               trControl = trainControl(method = 'cv', number = 10))
+
+linear_2 <- train(mpg ~ horsepower  + 
+                    weight + 
+                    displacement +
+                    acceleration +
+                    year +
+                    cylinders, data = Auto,
+                    method = 'lm',
+                    trControl = trainControl(method = 'cv', number = 10))
+
+summary(gam$finalModel)
+```
+
+```{r}
+anova(linear_2$finalModel, gam$finalModel)
+```
+
+The GAM model fits the data better than the linear model. It decreases the residual sum of squares by 42% and its p-value is close to zero. Therefore, we can say with good confidence that the relationship between the response and the covariates is non-linear.
+
+```{r}
+Auto %>%
+    mutate(pred = predict(gam, Auto)) %>%
+    gather(variable, value, 
+           weight, horsepower, 
+           displacement, acceleration,
+           year) %>%
+    ggplot() + 
+    labs(x = '', y = 'MPG') + 
+    geom_point(aes(value, mpg, col = 'blue')) +
+    geom_point(aes(value, pred, col = 'red'), size = 1.5) +
+    scale_color_manual(name = 'Value Type',
+                       labels = c('Observed', 'Predicted'),
+                       values = c('#60B7F8', '#E89F15')) +
+    facet_wrap(~variable, scales = 'free')
+```
+
 ## Exercise 9
 This question uses the variables dis (the weighted mean of distances
 to five Boston employment centers) and nox (nitrogen oxides concen-
