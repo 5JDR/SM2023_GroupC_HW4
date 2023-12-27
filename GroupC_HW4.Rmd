@@ -883,18 +883,8 @@ for(var in names(College)){
 It's not very clear which variables are in a non-linear relationship with the response due to the high variability of the data. However, some of them show some non-linear trends.
 
 ## Exercise 11
-In Section 7.7, it was mentioned that GAMs are generally fit using
-a backfitting approach. The idea behind backfitting is actually quite
-7.9 Exercises 305
-simple. We will now explore backfitting in the context of multiple
-linear regression.
-Suppose that we would like to perform multiple linear regression, but
-we do not have software to do so. Instead, we only have software to
-perform simple linear regression. Therefore, we take the following it
-erative approach: we repeatedly hold all but one coefficient estimate
-fixed at its current value, and update only that coefficient estimate
-using a simple linear regression. The process is continued until con
-vergence — that is, until the coefficient estimates stop changing.
+In Section 7.7, it was mentioned that GAMs are generally fit using a backfitting approach. The idea behind backfitting is actually quite simple. We will now explore backfitting in the context of multiple linear regression.
+Suppose that we would like to perform multiple linear regression, but we do not have software to do so. Instead, we only have software to perform simple linear regression. Therefore, we take the following it erative approach: we repeatedly hold all but one coefficient estimate fixed at its current value, and update only that coefficient estimate using a simple linear regression. The process is continued until convergence — that is, until the coefficient estimates stop changing.
 We now try this out on a toy example.
 
 (a) Generate a response Y and two predictors $X_1$ and $X_2$, with$n = 100$.
@@ -923,11 +913,156 @@ $\hat{\beta}_1$, and $\hat{\beta}_2$ each shown in a different color.
 multiple linear regression to predict $Y$ using $X_1$ and $X_2$. Use
 the abline() function to overlay those multiple linear regression
 coefficient estimates on the plot obtained in (e).
-(g) On this data, set, how many backfitting iterations were required
-in order to obtain a “good” approximation to the multiple regression coefficient estimates?
+(g) On this dataset, how many backfitting iterations were required in order to obtain a “good” approximation to the multiple regression coefficient estimates?
 
 **Solution**
 
+(a)
+
+The following model is considered for $Y$:
+$$Y=18 + 0.8 X_1 − 20 X_2 + \epsilon \\ X_1 \sim N(0,1) \\ X_2 \sim N(0,1) \\ \epsilon \sim N(0,1)$$
+
+```{r, warning=FALSE, message=FALSE}
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+
+set.seed(591)
+x1 <- rnorm(100)
+x2 <- rnorm(100)
+eps <- rnorm(100)
+
+y <- 18 + 0.8*x1 - 20*x2 + eps
+```
+
+```{r}
+g1 <- data.frame(x1, x2, y) %>%
+  ggplot(aes(x1, y)) + 
+  geom_point()
+
+g2 <- data.frame(x1, x2, y) %>%
+  ggplot(aes(x2, y)) + 
+  geom_point()
+
+grid.arrange(g1, g2, ncol = 2)
+```
+
+(b)
+
+\hat{\beta}_1 is initialized to 1.
+
+```{r}
+beta1 <- 1
+```
+
+(c)
+
+```{r}
+a = y - beta1 * x1
+beta2 = lm(a~x2)$coef[2]
+beta2
+```
+
+(d)
+
+```{r}
+r1 = y - beta2 * x2
+beta1 = lm(r1 ~ x1)$coef[2]
+beta1
+```
+
+(e)
+
+```{r}
+library(tidyverse)
+
+beta_1_init <- 1
+
+beta_0 <- c()
+beta_1 <- c()
+beta_2 <- c()
+
+# beta_2:
+r2 <- y - beta_1_init * x1
+beta_2[1] <- lm(r2 ~ x2)$coef[2]
+
+# beta_1:
+r1 <- y - beta_2[1] * x2
+lm_coef <- lm(r1 ~ x1)$coef
+beta_1[1] <- lm_coef[2]
+
+# beta_0:
+beta_0[1] <- lm_coef[1]
+
+
+for (i in 2:1000) {
+  r2 <- y - beta_1[i-1] * x1
+  beta_2[i] <- lm(r2 ~ x2)$coef[2]
+  
+  r1 <- y - beta_2[i-1] * x2
+  lm_coef <- lm(r1 ~ x1)$coef
+  beta_1[i] <- lm_coef[2]
+  
+  beta_0[i] <- lm_coef[1]
+}
+
+data.frame(iteration = 1:1000, beta_0, beta_1, beta_2) %>%
+  pivot_longer(-iteration, names_to = "coefficient", values_to = "estimate") %>%
+  ggplot(aes(x = iteration, y = estimate, col = factor(coefficient))) + 
+  geom_line() + 
+  scale_x_continuous(breaks = seq(0, 1000, 100), labels = scales::comma_format()) +
+  facet_wrap(coefficient ~ ., scales = "free_y", nrow = 3) + 
+  theme(legend.position = "none") + 
+  labs(title = "Backfitting Convergence", 
+       x = "Iteration", 
+       y = "Parameter Estimate")
+```
+
+(f)
+
+```{r}
+lm_coef <- lm(y ~ x1 + x2)$coefficients
+
+data.frame(iteration = 1:1000, beta_0, beta_1, beta_2) %>%
+  pivot_longer(-iteration, names_to = "coefficient", values_to = "estimate") %>%
+  ggplot(aes(x = iteration, y = estimate, col = factor(coefficient))) + 
+  geom_line() + 
+  geom_hline(data = data.frame(yint = lm_coef[1], coefficient = "beta_0"), aes(yintercept = yint), linetype = "dashed") +
+  geom_hline(data = data.frame(yint = lm_coef[2], coefficient = "beta_1"), aes(yintercept = yint), linetype = "dashed") +
+  geom_hline(data = data.frame(yint = lm_coef[3], coefficient = "beta_2"), aes(yintercept = yint), linetype = "dashed") +
+  scale_x_continuous(breaks = seq(0, 1000, 100), labels = scales::comma_format()) +
+  facet_wrap(coefficient ~ ., scales = "free_y", nrow = 3) + 
+  theme(legend.position = "none") + 
+  labs(title = "Backfitting Convergence", 
+       x = "Iteration", 
+       y = "Parameter Estimate")
+```
+```{r}
+data.frame(simple_reg = c(beta_0[1000], beta_1[1000], beta_2[1000]), multiple_reg = as.numeric(lm_coef))
+```
+
+The coefficients obtained from backfitting are exactly the same as the coefficients obtained from multiple linear regression.
+
+(g)
+
+```{r, warning=FALSE, message=FALSE}
+data.frame(iteration = 1:1000, beta_0, beta_1, beta_2) %>%
+  pivot_longer(-iteration, names_to = "coefficient", values_to = "estimate") %>%
+  ggplot(aes(x = iteration, y = estimate, col = factor(coefficient))) + 
+  geom_line() + 
+  geom_hline(data = data.frame(yint = lm_coef[1], coefficient = "beta_0"), aes(yintercept = yint), linetype = "dashed") +
+  geom_hline(data = data.frame(yint = lm_coef[2], coefficient = "beta_1"), aes(yintercept = yint), linetype = "dashed") +
+  geom_hline(data = data.frame(yint = lm_coef[3], coefficient = "beta_2"), aes(yintercept = yint), linetype = "dashed") +
+  geom_point() +
+  scale_x_continuous(limits = c(1, 10), breaks = seq(1, 10), minor_breaks = NULL) +
+  facet_wrap(coefficient ~ ., scales = "free_y", nrow = 3) + 
+  theme(legend.position = "none") + 
+  labs(title = "Backfitting Convergence", 
+       x = "Iteration", 
+       y = "Parameter Estimate")
+```
+
+It looks like convergence happens at iteration 3 from the graph, and that all subsequent iterations give the same estimates.
 ## Exercise 12
 This problem is a continuation of the previous exercise. In a toy
 example with $p = 100$, show that one can approximate the multiple
