@@ -802,6 +802,86 @@ relationship with the response?
 
 **Solution**
 
+(a)
+
+```{r, warning=FALSE, message=FALSE}
+library(ISLR)
+library("leaps")
+library("glmnet")
+
+set.seed(0)
+
+# Divide the dataset into training (1) and test (2)
+dataset_part <- sample(1:2, nrow(College), replace = T, prob = c(0.8, 0.2))
+
+p <- ncol(College) - 1
+
+# Fit subsets of various sizes:
+regfit.forward <- regsubsets(Outstate ~ ., data = College[dataset_part == 1, ], nvmax = p, method = "forward")
+
+# Test the trained models on the test set:
+test.mat <- model.matrix(Outstate ~ ., data = College[dataset_part == 2, ])
+test.errors <- rep(NA, p)
+for (i in 1:p) {
+    coefi <- coef(regfit.forward, id = i)
+    pred <- test.mat[, names(coefi)] %*% coefi
+    test.errors[i] <- mean((College$Outstate[dataset_part == 2] - pred)^2)
+}
+
+k <- which.min(test.errors)
+
+plot(test.errors, xlab = "Number of variables", ylab = "Validation MSE", pch = 19, type = "b")
+abline(v = k, col = "red")
+
+k
+```
+
+It looks like the best model is the one with 9 predictors, given by the validation errors.
+
+The variables (and their coefficients) are:
+
+```{r, warning=FALSE, message=FALSE}
+coef(regfit.forward, id = k)
+```
+
+(b)
+
+```{r, warning=FALSE, message=FALSE}
+library(gam)
+
+gam_fit <- gam(Outstate ~ Private + Accept + Room.Board + Personal + Terminal + S.F.Ratio + perc.alumni + Expend + Grad.Rate, data = College[dataset_part == 1, ])
+```
+
+****What should we plot? Should we say something else?****
+
+(c)
+
+```{r}
+# Predict the GAM performance on the test dataset:
+y_hat <- predict(gam_fit, newdata = College[dataset_part == 2, ])
+RMSE <- mean((College[dataset_part == 2, ]$Outstate - y_hat)^2)
+
+cat("RMSE of the GAM model:", RMSE, ", RMSE of the best subset model:", test.errors[k], "\n")
+```
+
+Surprisingly, the GAM model and the best subset model have the same RMSE.
+
+****WHY?****
+
+(d)
+
+```{r, warning=FALSE, message=FALSE, fig.height=10, fig.width=10}
+par(mfrow = c(3, 3))
+
+par(mfrow = c (4, 4))
+for(var in names(College)){
+  if(var != "Outstate" && var != "Private") # Avoid plotting the response variable and the categorical variables
+    plot(College[, var], College$Outstate, xlab = var, ylab = "Outstate", pch = 19, col = "blue4")
+}
+```
+
+It's not very clear which variables are in a non-linear relationship with the response due to the high variability of the data. However, some of them show some non-linear trends.
+
 ## Exercise 11
 In Section 7.7, it was mentioned that GAMs are generally fit using
 a backfitting approach. The idea behind backfitting is actually quite
