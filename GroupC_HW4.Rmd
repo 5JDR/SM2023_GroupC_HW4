@@ -1129,3 +1129,72 @@ This question is about using gam for univariate smoothing, the advantages of pen
 6. Fit a linear model including a b-spline using the function bs on times and select a suitable degree and the knots position. Compare this model with the previous ones and comment.
 
 **Solution**
+
+```{r message=FALSE, warning=FALSE}
+library(MASS)
+library(mgcv)
+data(mcycle)
+
+# If we don't do this mcycle is a closure
+df <- as.data.frame(matrix(c(mcycle$accel, mcycle$time), ncol = 2))
+names(df) <- c("accel", "time")
+```
+
+```{r}
+plot(df$time, df$accel)
+```
+
+
+```{r}
+RMSE <- rep(0, 11)
+
+for (i in 1:11){
+  gam_fit <- gam(accel ~ s(time, k = 30 + i), method = "GCV.Cp", data = df)
+  RMSE[i] <- mean(gam_fit$residuals^2)
+}
+
+plot(30:40, RMSE, type = "o", xlab = "k", ylab = "RMSE")
+abline(v = 30 + which.min(RMSE) - 1, col = "red")
+```
+
+```{r}
+fit_1 <- gam_fit <- gam(accel ~ s(time, k = 30+which.min(RMSE)-1), method = "GCV.Cp", data = df)
+plot(fit_1, residuals = TRUE, se = FALSE)
+```
+
+```{r}
+fit_2 <- lm(accel ~ poly(time, 3), data = df)
+
+termplot(fit_2, partial.resid = TRUE, se = FALSE)
+```
+
+We can notice that the polynomial fit is much worse than the penalized regression spline fit. This is because it can't manage to capture the large changes in the function.
+
+```{r}
+## Is sp the penalization parameter?
+## Basis dim updated by k, what do we have to set?
+fit_3 <- gam(mcycle$accel ~ s(mcycle$time, k = 30+which.min(RMSE)-1), method = "GCV.Cp", sp=0)
+plot(fit_3, residuals = TRUE, se = FALSE)
+```
+
+```{r}
+## Is bs="cc" the cubic spline?
+fit_4 <- gam(mcycle$accel ~ s(mcycle$time, k = 30+which.min(RMSE)-1, bs="cc"), method = "GCV.Cp", sp=0)
+plot(fit_4, residuals = TRUE, se = FALSE)
+```
+We can watch $R^2$ but we have no information about smoothness, we could use GCV value? How to obtain it from lm?
+
+```{r}
+# It looks heteroskedastic
+plot(mcycle$time, fit_1$residuals)
+```
+
+```{r}
+## I choosed the points by looking at the plot changes of direction
+fit_5 <- lm(accel ~ bs(time, knots=c(15, 21, 33, 43)), data = df)
+termplot(fit_5,  partial.resid = TRUE, se = FALSE)
+abline(v = c(15, 21, 33, 43), col = "blue")
+```
+
+The model results similar to the penalized regression spline fit (fit_1), but it's not as smooth as the penalized regression spline fit. The penalized regression spline fit looks the best model for this data.
+
