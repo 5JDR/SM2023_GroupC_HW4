@@ -1,6 +1,11 @@
 ---
 title: "GroupC_HW4"
-output: html_document
+output: 
+  html_document:
+    toc: true
+editor_options:
+  markdown:
+    wrap: 72
 date: "2023-12-22"
 ---
 
@@ -1063,6 +1068,7 @@ data.frame(iteration = 1:1000, beta_0, beta_1, beta_2) %>%
 ```
 
 It looks like convergence happens at iteration 3 from the graph, and that all subsequent iterations give the same estimates.
+
 ## Exercise 12
 This problem is a continuation of the previous exercise. In a toy
 example with $p = 100$, show that one can approximate the multiple
@@ -1146,14 +1152,14 @@ plot(df$time, df$accel)
 
 
 ```{r}
-RMSE <- rep(0, 11)
+RMSE <- rep(0, 12)
 
-for (i in 1:11){
-  gam_fit <- gam(accel ~ s(time, k = 30 + i), method = "GCV.Cp", data = df)
-  RMSE[i] <- mean(gam_fit$residuals^2)
+for (i in seq(30, 41)){
+  gam_fit <- gam(accel ~ s(time, k = i), data = df)
+  RMSE[i-29] <- mean(gam_fit$residuals^2)
 }
 
-plot(30:40, RMSE, type = "o", xlab = "k", ylab = "RMSE")
+plot(30:41, RMSE, type = "o", xlab = "k", ylab = "RMSE")
 abline(v = 30 + which.min(RMSE) - 1, col = "red")
 ```
 
@@ -1161,40 +1167,80 @@ abline(v = 30 + which.min(RMSE) - 1, col = "red")
 fit_1 <- gam_fit <- gam(accel ~ s(time, k = 30+which.min(RMSE)-1), method = "GCV.Cp", data = df)
 plot(fit_1, residuals = TRUE, se = FALSE)
 ```
+```{r}
+summary(fit_1)
+```
+
+
 
 ```{r}
-fit_2 <- lm(accel ~ poly(time, 3), data = df)
+fit_2 <- lm(accel ~ poly(time, round(summary(fit_1)$edf)), data = df)
 
 termplot(fit_2, partial.resid = TRUE, se = FALSE)
 ```
+```{r}
+summary(fit_2)
+```
+
 
 We can notice that the polynomial fit is much worse than the penalized regression spline fit. This is because it can't manage to capture the large changes in the function.
 
 ```{r}
-## Is sp the penalization parameter?
-## Basis dim updated by k, what do we have to set?
-fit_3 <- gam(mcycle$accel ~ s(mcycle$time, k = 30+which.min(RMSE)-1), method = "GCV.Cp", sp=0)
+fit_3 <- gam(accel ~ s(time, k = 12), method="GCV.Cp", sp=0, data = df)
+
 plot(fit_3, residuals = TRUE, se = FALSE)
 ```
+```{r}
+summary(fit_3)
+```
+
 
 ```{r}
 ## Is bs="cc" the cubic spline?
-fit_4 <- gam(mcycle$accel ~ s(mcycle$time, k = 30+which.min(RMSE)-1, bs="cc"), method = "GCV.Cp", sp=0)
+fit_4 <- gam(accel ~ s(time, k = 12, bs="cr"), method = "GCV.Cp", sp=0, data=df)
 plot(fit_4, residuals = TRUE, se = FALSE)
 ```
+```{r}
+summary(fit_4)
+```
+
 We can watch $R^2$ but we have no information about smoothness, we could use GCV value? How to obtain it from lm?
 
-```{r}
+```{r fig.height=10, fig.width=20}
 # It looks heteroskedastic
-plot(mcycle$time, fit_1$residuals)
+# Similar
+# small time, irregularities, less variance
+# 1st best
+par(mfrow=c(2,2))
+
+plot(df$time, fit_1$residuals)
+plot(df$time, fit_2$residuals)
+plot(df$time, fit_3$residuals)
+plot(df$time, fit_4$residuals)
+```
+
+
+```{r}
+knots_1 <- c(7, seq(14, 32, 2), seq(34, max(df$time), 7))
+
+knots_1 <- c(quantile(df$time, probs = seq(0.1, 0.9, 0.1)), 55)
+fit_5 <- lm(accel ~ bs(time, knots=knots_1), data = df, )
+termplot(fit_5,  partial.resid = TRUE, se = FALSE)
+abline(v = knots_1, col = "blue")
 ```
 
 ```{r}
-## I choosed the points by looking at the plot changes of direction
-fit_5 <- lm(accel ~ bs(time, knots=c(15, 21, 33, 43)), data = df)
-termplot(fit_5,  partial.resid = TRUE, se = FALSE)
-abline(v = c(15, 21, 33, 43), col = "blue")
+df2 <- data.frame("model" = seq(1, 5),
+                  "dev_explained" = c(summary(fit_1)$dev.expl, summary(fit_2)$r.squared, summary(fit_3)$dev.expl, summary(fit_4)$dev.expl, summary(fit_5)$r.squared),
+                  "AIC" = c(AIC(fit_1), AIC(fit_2), AIC(fit_3), AIC(fit_4), AIC(fit_5)),
+                  "BIC" = c(BIC(fit_1), BIC(fit_2), BIC(fit_3), BIC(fit_4), BIC(fit_5)))
+                  
 ```
 
-The model results similar to the penalized regression spline fit (fit_1), but it's not as smooth as the penalized regression spline fit. The penalized regression spline fit looks the best model for this data.
+```{r}
+df2
+```
+
+
+Similar but worse
 
