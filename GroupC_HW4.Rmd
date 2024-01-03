@@ -231,8 +231,8 @@ example sketches of $\hat{g}$ in each of the following scenarios.
 
 (a) If $\lambda = \inf$ and $m = 0$, then we have that $\hat{g} = arg \min_g (\sum_{i=1}^n (y_i − g(x_i))^2)$, which reduce the value of the function $g$, then the result will be a constant function equal to zero.
 (b) If $\lambda = \inf$ and $m = 1$, then we have that $\hat{g} = arg \min_g (\sum_{i=1}^n (y_i − g(x_i))^2 + \lambda \int [g^{(1)}(x)]^2 dx)$, which is the least squares fit with a penalty on the first derivative. The penalty term is so high that the fit is a straight line.
-(c) If $\lambda = \inf$ and $m = 2$, then we have that $\hat{g} = arg \min_g (\sum_{i=1}^n (y_i − g(x_i))^2 + \lambda \int [g^{(2)}(x)]^2 dx)$, which is the least squares fit with a penalty on the second derivative. The penalty term is so high that the fit is a straight line.
-(d) If $\lambda = \inf$ and $m = 3$, then we have that $\hat{g} = arg \min_g (\sum_{i=1}^n (y_i − g(x_i))^2 + \lambda \int [g^{(3)}(x)]^2 dx)$, which is the least squares fit with a penalty on the third derivative. The penalty term is so high that the fit is a straight line.
+(c) If $\lambda = \inf$ and $m = 2$, then we have that $\hat{g} = arg \min_g (\sum_{i=1}^n (y_i − g(x_i))^2 + \lambda \int [g^{(2)}(x)]^2 dx)$, which is the least squares fit with a penalty on the second derivative. The penalty term is so high that the fit is a parabolic line.
+(d) If $\lambda = \inf$ and $m = 3$, then we have that $\hat{g} = arg \min_g (\sum_{i=1}^n (y_i − g(x_i))^2 + \lambda \int [g^{(3)}(x)]^2 dx)$, which is the least squares fit with a penalty on the third derivative. The penalty term is so high that the fit is a cubic line.
 (e) If $\lambda = 0$ and $m = 3$, then we have that $\hat{g} = arg \min_g ( \sum_{i=1}^n (y_i − g(x_i))^2 + \lambda \int [g^{(3)}(x)]^2 dx)$, which is the least squares fit with no penalty because the factor $\lambda$ is zero.
 
 ## Exercise 3
@@ -1150,7 +1150,7 @@ names(df) <- c("accel", "time")
 plot(df$time, df$accel)
 ```
 
-
+1.
 ```{r}
 RMSE <- rep(0, 12)
 
@@ -1172,7 +1172,7 @@ summary(fit_1)
 ```
 
 
-
+2.
 ```{r}
 fit_2 <- lm(accel ~ poly(time, round(summary(fit_1)$edf)), data = df)
 
@@ -1183,8 +1183,9 @@ summary(fit_2)
 ```
 
 
-We can notice that the polynomial fit is much worse than the penalized regression spline fit. This is because it can't manage to capture the large changes in the function.
+We can notice that the polynomial fit is much worse than the penalized regression spline fit. This is because it can't manage to capture the linearity in the left part of the function.
 
+3.
 ```{r}
 fit_3 <- gam(accel ~ s(time, k = 12), method="GCV.Cp", sp=0, data = df)
 
@@ -1193,8 +1194,9 @@ plot(fit_3, residuals = TRUE, se = FALSE)
 ```{r}
 summary(fit_3)
 ```
+The fit is much better than the polynomial one and really similar to the penalized regression spline fit. Even if the penalization is not used, the fit results really smooth.
 
-
+4.
 ```{r}
 ## Is bs="cc" the cubic spline?
 fit_4 <- gam(accel ~ s(time, k = 12, bs="cr"), method = "GCV.Cp", sp=0, data=df)
@@ -1204,13 +1206,10 @@ plot(fit_4, residuals = TRUE, se = FALSE)
 summary(fit_4)
 ```
 
-We can watch $R^2$ but we have no information about smoothness, we could use GCV value? How to obtain it from lm?
+Even if the two fits are really similar, we have some differences on the right part of the function. The cubic spline fit is a little bit more smooth than the thin spline fit.
 
+5.
 ```{r fig.height=10, fig.width=20}
-# It looks heteroskedastic
-# Similar
-# small time, irregularities, less variance
-# 1st best
 par(mfrow=c(2,2))
 
 plot(df$time, fit_1$residuals)
@@ -1219,15 +1218,20 @@ plot(df$time, fit_3$residuals)
 plot(df$time, fit_4$residuals)
 ```
 
+We can notice that the residual plots looks all the same. They are all heteroskedastic because in the center we can notice more variance than in the left and right part of the function. Therefore in the left part we can notice some irregularities beside in the first fit, which looks more linear. From these plots we can notice that the first fit is the best one.
 
+6.
+
+We select the knots for each decile of the time variable and we add a knot in the right part of the function to capture the linearity.
 ```{r}
-knots_1 <- c(7, seq(14, 32, 2), seq(34, max(df$time), 7))
-
 knots_1 <- c(quantile(df$time, probs = seq(0.1, 0.9, 0.1)), 55)
 fit_5 <- lm(accel ~ bs(time, knots=knots_1), data = df, )
 termplot(fit_5,  partial.resid = TRUE, se = FALSE)
 abline(v = knots_1, col = "blue")
 ```
+
+The curve looks really similar to the first fit. We can notice that the fit is not really smooth in the right part of the function. This is because we have only one knot in the right part of the function. If we add more knots in the right part of the function we can notice that the fit is more smooth.
+
 
 ```{r}
 df2 <- data.frame("model" = seq(1, 5),
@@ -1240,7 +1244,4 @@ df2 <- data.frame("model" = seq(1, 5),
 ```{r}
 df2
 ```
-
-
-Similar but worse
-
+From the table we can notice that the last fit is the best one w.r.t. the explained deviance but the AIC and the BIC are higher. Paying a little of explained deviance we can have a better fit with a lower AIC and BIC with the third fit. This differences are not really big, so we can choose one of all the fits based on the requirements of the problem. The only really bad fit is the second one, which has a really low explained deviance and a really high AIC and BIC.
