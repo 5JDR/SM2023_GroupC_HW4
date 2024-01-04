@@ -76,14 +76,44 @@ The true sampling distribution is the distribution of the statistic obtained if 
 
 
 # FSDS - Chapter 8
-## Exercise 8.24
-As the basis for a statistical analysis, explain the difference between a statistical model and an
-algorithm. For each, explain the extent to which it can deal with summarizing effects, inferential
-statistics, and prediction.
+## Exercise 8.4
+Refer to Exercise 8.1. Construct a classification tree, and prune strongly until the tree uses
+a single explanatory variable. Which crabs were predicted to have satellites? How does the
+proportion of correct predictions compare with the more complex tree in Figure 8.2?
 
 **Solution**
 
-With the statistical models we can summarize the effects of a population, like means and variances, and make inference about the population parameters based on the sample, while the algorithms are more suited to make predictions based on the input data, but they usually can't make inference about the population parameters or the distribution that generated them.
+```{r}
+library(rpart) #for fitting decision trees
+library(rpart.plot) #for plotting decision trees
+```
+
+```{r}
+crab <- read.table("crabs.txt", header = TRUE)
+
+tree <- rpart(y ~ . - sat, data=crab)
+```
+
+```{r}
+fit <- rpart(y ~ weight + width + color + spine, method="class", data=crab)
+pruned_fit <- prune(fit, cp=fit$cptable[4, "CP"])
+rpart.plot(pruned_fit, extra=1, digits=4, box.palette="auto")
+```
+
+
+```{r}
+pruned_tree <- prune(tree, cp=tree$cptable[2, "CP"])
+rpart.plot(pruned_tree, extra=1, digits=4, box.palette="auto")
+```
+
+```{r}
+mean(crab$y == (predict(pruned_tree, crab) > 0.5))
+mean(crab$y == (predict(pruned_fit, crab) > 0.5))
+```
+
+The crabs which were predicted to have satellites are the ones with width < 25.85. The proportion of correct predictions for the simple tree is 0.71 which is more than the proportion of correct predictions for the more complex tree in figure 8.2 which is 0.5.
+
+```{r}
 
 # LAB
 LAB: Suppose you receive $n=15$ phone calls in a day, and you want to build a model to assess their average length. Your likelihood for each call length is $y_i∼Exponential(\lambda)$. Now, you have to choose the prior $\pi(\lambda)$. Please, tell which of these priors is adequate to describe the problem, and provide a short motivation for each of them:
