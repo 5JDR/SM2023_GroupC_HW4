@@ -83,7 +83,7 @@ proportion of correct predictions compare with the more complex tree in Figure 8
 
 **Solution**
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(rpart) #for fitting decision trees
 library(rpart.plot) #for plotting decision trees
 ```
@@ -91,29 +91,33 @@ library(rpart.plot) #for plotting decision trees
 ```{r}
 crab <- read.table("crabs.txt", header = TRUE)
 
-tree <- rpart(y ~ . - sat, data=crab)
+fit <- rpart(y ~ weight + width + color + spine, method="class", data=crab)
 ```
 
 ```{r}
-fit <- rpart(y ~ weight + width + color + spine, method="class", data=crab)
 pruned_fit <- prune(fit, cp=fit$cptable[4, "CP"])
 rpart.plot(pruned_fit, extra=1, digits=4, box.palette="auto")
 ```
 
 
 ```{r}
-pruned_tree <- prune(tree, cp=tree$cptable[2, "CP"])
+pruned_tree <- prune(fit, cp=fit$cptable[2, "CP"])
 rpart.plot(pruned_tree, extra=1, digits=4, box.palette="auto")
 ```
 
 ```{r}
-mean(crab$y == (predict(pruned_tree, crab) > 0.5))
-mean(crab$y == (predict(pruned_fit, crab) > 0.5))
+y_hat_fit <- apply(predict(pruned_fit, crab), 1, which.max) - 1
+y_hat_tree <- apply(predict(pruned_tree, crab), 1, which.max) - 1
 ```
 
-The crabs which were predicted to have satellites are the ones with width < 25.85. The proportion of correct predictions for the simple tree is 0.71 which is more than the proportion of correct predictions for the more complex tree in figure 8.2 which is 0.5.
 
 ```{r}
+mean(crab$y == y_hat_fit)
+mean(crab$y == y_hat_tree)
+```
+
+The crabs which were predicted to have satellites are the ones with width >= 25.85. The proportion of correct predictions for the simple tree is 0.7 which is less than the proportion of correct predictions for the more complex tree in figure 8.2 which is 0.75.
+
 
 # LAB
 LAB: Suppose you receive $n=15$ phone calls in a day, and you want to build a model to assess their average length. Your likelihood for each call length is $y_i∼Exponential(\lambda)$. Now, you have to choose the prior $\pi(\lambda)$. Please, tell which of these priors is adequate to describe the problem, and provide a short motivation for each of them:
