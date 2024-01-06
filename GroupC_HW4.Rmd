@@ -48,11 +48,8 @@ curve(dbeta(x, alpha, beta), ylab="Density", xlim=c(-0.01,1), ylim=c(0, 10))
 curve(dbeta(x, alpha + sum(vegetarian), beta + n - sum(vegetarian)), add=TRUE, col="red")
 legend("topright", legend=c("Prior", "Posterior"), col=c("black", "red"), lty=1)
 ```
-The posterior mean will approach the prior mean, so using the value 0.5 and 1 the mean will be near to zero and, using the value 10, the posterior mean will be between zero and the prior mean. We can notice that the posterior mean is 0.2 so the data mean weights more than the prior mean.
 
-####################
-######TO CHECK######
-####################
+The posterior mean will approach the prior mean, so using the value 0.5 and 1 the mean will be near to zero and, using the value 10, the posterior mean will be between zero and the prior mean. We can notice that the posterior mean is 0.2 so the data mean weights more than the prior mean.
 
 ```{r}
 x <- seq(0, 1, 100)
@@ -373,7 +370,7 @@ the fit obtained.
 
 **Solution**
 
-```{r}
+```{r warning=FALSE, message=FALSE}
 library(ISLR)
 library(modelr)
 cv  <- crossv_kfold(Wage, k = 10)
@@ -581,9 +578,13 @@ data_frame(RMSE = errors) %>%
 optimal_degree <- which.min(errors)
 ```
 
-The optimal polynomial degree is "r optimal_degree".
+The optimal polynomial degree is:
 
-Let's fit a polynomial regression model with degree "r optimal_degree".
+```{r}
+optimal_degree
+```
+
+Let's fit a polynomial regression model with this degree.
 
 ```{r}
 poly <- lm(mpg ~ poly(horsepower, optimal_degree), data = Auto)
@@ -700,7 +701,7 @@ dis as the predictor and nox as the response.
 predict nox using dis. Report the regression output, and plot
 the resulting data and polynomial fits.
 
-```{r}
+```{r warning=FALSE, message=FALSE}
 library(MASS)
 library(ggplot2)
 library(splines)
@@ -746,8 +747,8 @@ df1 %>% ggplot(aes(x=p, y=rss)) + geom_point() + geom_line()
 (c) Perform cross-validation or another approach to select the opti-
 mal degree for the polynomial, and explain your results.
 
-```{r}
-suppressPackageStartupMessages(library(cv))
+```{r warning=FALSE, message=FALSE}
+library(cv)
 
 mse = vector(mode="numeric", length=10L)
 for (p in 1:10){
@@ -767,7 +768,7 @@ The MSE decreases at first and reaches the minimum for a polynomial of degree $p
 using dis. Report the output for the fit using four degrees of
 freedom. How did you choose the knots? Plot the resulting fit.
 
-```{r}
+```{r warning=FALSE, message=FALSE}
 fit = lm(nox ~ bs(dis, df=4), data = Boston)
 
 summary(fit)
@@ -780,7 +781,7 @@ ggplot(Boston, aes(dis, nox)) + geom_point() +
 plot the resulting fits as well as the resulting RSS. Describe the
 results obtained.
 
-```{r}
+```{r warning=FALSE, message=FALSE}
 df = data.frame("nox"=numeric(),
                 "dis"=numeric(),
                 "df"=factor())
@@ -810,7 +811,7 @@ An excessive number of degrees of freedom results in an overfit of the data (aga
 the best degrees of freedom for a regression spline on this data.
 Describe your results.
 
-```{r}
+```{r warning=FALSE, message=FALSE}
 mse = c()
 for (p in seq(3,14,2)){
   fit = lm(nox ~ poly(dis, p), data=Boston)
@@ -990,7 +991,7 @@ grid.arrange(g1, g2, ncol = 2)
 
 (b)
 
-\hat{\beta}_1 is initialized to 1.
+$\hat{\beta}_1$ is initialized to 1.
 
 ```{r}
 beta1 <- 1
@@ -1014,7 +1015,7 @@ beta1
 
 (e)
 
-```{r}
+```{r warning=FALSE, message=FALSE}
 library(tidyverse)
 
 beta_1_init <- 1
