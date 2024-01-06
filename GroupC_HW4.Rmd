@@ -520,6 +520,8 @@ lines(sorted$age, y_hat_poly2   , col = "orange", lwd = 2)
 lines(sorted$age, y_hat_cutted  , col = "purple", lwd = 2)
 lines(sorted$age, y_hat_smoothed, col = "black" , lwd = 2)
 legend("topleft", legend = c("Complete", "Poly", "Poly2", "Cutted", "Smoothed"), col = c("red", "green", "orange", "purple", "black"), lty = 1, cex = 0.8)
+
+unloadNamespace("mgcv")
 ```
 
 From the plot we can notice that the models are really similar but all of them are not smoothed at all.
