@@ -892,6 +892,8 @@ coef(regfit.forward, id = k)
 library(gam)
 
 gam_fit <- gam(Outstate ~ Private + Accept + Room.Board + Personal + Terminal + S.F.Ratio + perc.alumni + Expend + Grad.Rate, data = College[dataset_part == 1, ])
+par(mfrow = c(2, 3))
+plot(gam_fit, se = T, col = "blue")
 ```
 
 ****What should we plot? Should we say something else?****
