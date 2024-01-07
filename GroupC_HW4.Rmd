@@ -892,11 +892,9 @@ coef(regfit.forward, id = k)
 library(gam)
 
 gam_fit <- gam(Outstate ~ Private + Accept + Room.Board + Personal + Terminal + S.F.Ratio + perc.alumni + Expend + Grad.Rate, data = College[dataset_part == 1, ])
-par(mfrow = c(2, 3))
-plot(gam_fit, se = T, col = "blue")
+plot(College[dataset_part == 1, ]$Outstate, gam_fit$residuals)
+abline(h = 0, col = "red")
 ```
-
-****What should we plot? Should we say something else?****
 
 (c)
 
@@ -908,9 +906,7 @@ RMSE <- mean((College[dataset_part == 2, ]$Outstate - y_hat)^2)
 cat("RMSE of the GAM model:", RMSE, ", RMSE of the best subset model:", test.errors[k], "\n")
 ```
 
-Surprisingly, the GAM model and the best subset model have the same RMSE.
-
-****WHY?****
+Surprisingly, the GAM model and the best subset model have the same RMSE. 
 
 (d)
 
